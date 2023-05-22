@@ -18,18 +18,18 @@
 if (!requireNamespace("BiocManager", quietly = TRUE)) {
   install.packages("BiocManager")
   BiocManager::install()}
-
-if(!require(edgeR)) BiocManager::install("edgeR")
-if(!require(ggrepel)) install.packages(ggrepel)
-if(!require(pheatmap)) install.packages("pheatmap")
-
-if(!require(devtools)) {
-  install.packages("devtools")
+if(!require(ggpubr)) {
+  if(!require(devtools))install.packages("devtools")
   devtools::install_github("kassambara/ggpubr")}
-if(!require(RColorBrewer)) install.packages("RcolorBrewer")
+if(!require(edgeR)) BiocManager::install("edgeR")
+if(!require(ggplot2)) install.packages("ggplot2")
+if(!require(ggrepel)) install.packages("ggrepel")
 if(!require(gplots)) install.packages("gplots")
+if(!require(gprofiler2)) install.packages("gprofiler2")
+if(!require(pheatmap)) install.packages("pheatmap")
+if(!require(RColorBrewer)) install.packages("RcolorBrewer")
 if(!require(tidyverse)) install.packages("tidyverse")
-if(!require(grpofiler2)) install.packages("gprofiler2")
+if(!require(UpSetR)) install.packages("UpSetR")
 
 ###############################################
 #             Includes                        #
@@ -41,7 +41,6 @@ library(ggrepel)
 library(RColorBrewer)
 library(pheatmap)
 library(tidyverse)
-
 # Other libraries are loaded in the required section
 
 ###############################################
@@ -85,8 +84,6 @@ targets <- targets %>%
 targets$population[which(targets$variety == "LukTakhar")] <- "japonica"
 targets$population[which(targets$variety == "MBlatec")] <- "japonica"
 write_delim(targets, file = "../data/samples_shortxLuk_populations.txt")
-
-
 
 # This allows us to fit a means model to the data, using a design matrix coded as
 design <- model.matrix(~0+group)
@@ -145,9 +142,9 @@ y$samples$lib.size = colSums(y$counts) # Recalculate library sizes
 
 # Save the library sizes plot
 png(file="raw-library_sizes.png",    # create PNG for the library sizes        
-    width = 8*600,        # 10 x 600 pixels
+     width = 8*600,        #  8 x 600 pixels
     height = 5*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size))
 par(mar=c(9,4.1,4.1,2.1))
 barplot(y$samples$lib.size, names=colnames(y), las=2)
@@ -158,9 +155,9 @@ dev.off()
 logcounts <- cpm(y,log=TRUE)
 
 png(file=paste0("raw-histogram_logCPM.png"),    # create PNG for the histogram      
-    width = 8*600,        # 10 x 600 pixels
+     width = 8*600,        #  8 x 600 pixels
     height = 5*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size))
 par(mar=c(9,4.1,4.1,2.1))
 hist(logcounts)
@@ -169,7 +166,7 @@ dev.off()
 png(filename = paste0("raw-BoxPlot.png"),    # create PNG for the BoxPlot        
     width = 10*600,        # 10 x 600 pixels
     height = 5*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)
 par(mar=c(9,4.1,4.1,2.1))
 boxplot(logcounts, xlab="", ylab="Log2 counts per million",las=2)
@@ -185,7 +182,7 @@ data.frame(str_c(targets$variety, "_", targets$treatment),col.cell)
 png(filename = paste0("raw-MDS_plot.png"),    # create PNG for the MDS        
     width = 10*600,        # 10 x 600 pixels
     height = 5*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size)
 plotMDS(y,col=col.cell)
 title("MDS by Sample")
@@ -201,7 +198,6 @@ dev.off()
 # not provide enough statistical evidence for a reliable judgement to be made. Such genes can
 # therefore be removed from the analysis without any loss of information.
 
-
 # Find out how many rows have 0 expression among all samples
 table(rowSums(y$counts==0)==47)
 # FALSE  TRUE 
@@ -210,7 +206,6 @@ table(rowSums(y$counts==0)==47)
 # According to the EdgeR manual, as a rule of thumb, genes are dropped if they can’t possibly be expressed in all
 # the samples for any of the conditions. So, here we set the cut-off such that cpm has to be > 1 across the size of the
 # group with less number of samples. In our case, the smallest group of samples contains 3 libraries.
-
 keep <- rowSums(cpm(y)>1)>=3
 table(keep)
 # FALSE  TRUE 
@@ -228,9 +223,9 @@ title("Barplot of library sizes")
 
 # Save the library sizes plot
 png(file="fil-library_sizes.png",    # create PNG for the MDS        
-    width = 8*600,        # 10 x 600 pixels
+     width = 8*600,        #  8 x 600 pixels
     height = 5*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size))
 par(mar=c(9,4.1,4.1,2.1))
 barplot(y.filtered$samples$lib.size, names=colnames(y), las=2)
@@ -246,9 +241,9 @@ dev.off()
 logcounts.filtered <- cpm(y.filtered,log=TRUE)
 
 png(file=paste0("fil-histogram_logCPM.png"),    # create PNG for the histogram        
-    width = 8*600,        # 10 x 600 pixels
+     width = 8*600,        #  8 x 600 pixels
     height = 5*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size))
 par(mar=c(9,4.1,4.1,2.1))
 hist(logcounts.filtered)
@@ -257,7 +252,7 @@ dev.off()
 png(filename = paste0("fil-BoxPlot.png"),    # create PNG for the BoxPlot        
     width = 10*600,        # 10 x 600 pixels
     height = 5*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)
 par(mar=c(9,4.1,4.1,2.1))
 boxplot(logcounts.filtered, xlab="", ylab="Log2 counts per million",las=2)
@@ -289,7 +284,7 @@ plotMDS(y.filtered,col=col.cell)
 png(filename = paste0("fil-MDS_plot.png"),    # create PNG for the MDS        
     width = 10*600,        # 10 x 600 pixels
     height = 5*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size)
 plotMDS(y.filtered,col=col.cell)
 title("MDS by Sample")
@@ -328,7 +323,7 @@ heatmap.2(highly_variable_lcpm,
 png(file="fil-top500_var_genes-heatmap.png",    # create PNG for the MDS        
     width = 10*600,        # 10 x 600 pixels
     height = 5*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size))
 par(mar=c(9,4.1,4.1,2.1))
 heatmap.2(highly_variable_lcpm, 
@@ -414,9 +409,9 @@ logcounts.filtered.norm <- cpm(y.filtered.norm, log = TRUE)
 logcounts.filtered.norm.df <- as_tibble(logcounts.filtered.norm, rownames = "Gene_ID")
 
 png(file=paste0("norm-histogram_logCPM.png"),    # create PNG for the histogram        
-    width = 8*600,        # 10 x 600 pixels
+     width = 8*600,        #  8 x 600 pixels
     height = 5*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size))
 par(mar=c(9,4.1,4.1,2.1))
 hist(logcounts.filtered.norm)
@@ -425,7 +420,7 @@ dev.off()
 png(filename = paste0("norm-BoxPlot.png"),    # create PNG for the BoxPlot        
     width = 10*600,        # 10 x 600 pixels
     height = 5*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)
 par(mar=c(9,4.1,4.1,2.1))
 boxplot(logcounts.filtered.norm, xlab="", ylab="Log2 counts per million",las=2)
@@ -437,7 +432,7 @@ dev.off()
 png(filename = paste0("norm-MDS_plot.png"),    # create PNG for the MDS        
     width = 10*600,        # 10 x 600 pixels
     height = 5*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size)
 plotMDS(y.filtered.norm,col=col.cell)
 title("MDS by Sample")
@@ -458,14 +453,14 @@ plot(clusters, labels=rownames(targets))
 png(filename = paste0("norm-clustering.png"),    # create PNG for the clustering        
     width = 10*600,        # 10 x 600 pixels
     height = 5*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size)
 plot(clusters, labels=rownames(y.filtered.norm$samples))
 dev.off()
 
 # Correlation pheatmap
 # use pearson for CPMs hich looks for linearly dependent variables
-# use spearman for log CPMs, as When you log transform them, you change the relationships between genes, ceasing to be linea.
+# use spearman for log CPMs, as When you log transform them, you change the relationships between genes, ceasing to be linear.
 
 rld_cor <- cor(logcounts.filtered.norm, method = "spearman")
 rld_cor2 <- cor(cpm(y.filtered.norm, log = FALSE), method = "pearson") 
@@ -485,11 +480,11 @@ ph2 <- pheatmap(rld_cor2, color = heat.colors, border_color=NA, fontsize = 10,
 # Principal component analysis (PCA) -------------
 pca.res <- prcomp(t(logcounts.filtered.norm), scale.=F, retx=T)
 #look at the PCA result (pca.res) that you just created
-ls(pca.res)
 summary(pca.res) # Prints variance summary for all principal components.
 pca.res$rotation #$rotation shows you how much each gene influenced each PC (called 'scores')
 pca.res$x # 'x' shows you how much each sample influenced each PC (called 'loadings')
 #note that these have a magnitude and a direction (this is the basis for making a PCA plot)
+
 stats::screeplot(pca.res) # A screeplot is a standard way to view eigenvalues for each PCA
 pc.var<-pca.res$sdev^2 # sdev^2 captures these eigenvalues from the PCA result
 pc.per<-round(pc.var/sum(pc.var)*100, 1) # we can then use these eigenvalues to calculate the percentage variance explained by each PC
@@ -497,7 +492,7 @@ pc.per<-round(pc.var/sum(pc.var)*100, 1) # we can then use these eigenvalues to 
 png(filename = paste0("norm-PCA_percentage_of_variance_by_PC.png"),    # create PNG for the clustering        
     width = 10*600,        # 10 x 600 pixels
     height = 5*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size)
 plot(pc.per)
 title("Percentage variance explained by each PC")
@@ -524,9 +519,9 @@ pca.plot <- ggplot(pca.res.df) +
   theme_bw()
 
 png(filename = paste0("norm-PCA-by_", "group", ".png"),    # create PNG for the PCA    
-    width = 7.55*600,        # 10 x 600 pixels
+    width = 7.55*600,        # 7.55 x 600 pixels
     height = 6.8*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size)
 print(pca.plot)
 dev.off()
@@ -547,9 +542,9 @@ for (i in seq_along(colnames(targets))){
    theme_bw()
 
  png(filename = paste0("Supp_fig_4B-norm-PCA-by_", colnames(targets)[i], ".png"),    # create PNG for the PCA    
-     width = 7.55*600,        # 10 x 600 pixels
+     width = 7.55*600,        # 7.55 x 600 pixels
      height = 6.8*600,
-     res = 600,            # 300 pixels per inch
+     res = 600,            # 600 pixels per inch
      pointsize = 8)        # smaller font size)
   print(pca.plot)
   dev.off()
@@ -578,7 +573,6 @@ pca.pivot$PC <- factor(pca.pivot$PC,
                        levels = c("PC1", "PC2", "PC3", "PC4", "PC5", "PC6", "PC7", "PC8", "PC9", "PC10",
                                   "PC11", "PC12", "PC13", "PC14", "PC15", "PC16", "PC17", "PC18", "PC19", "P20"))
 
-
 small.mult.pca <- ggplot(pca.pivot) +
   aes(x=sample, y=loadings, fill = group) + # you could iteratively 'paint' different covariates onto this plot using the 'fill' aes
   geom_bar(stat="identity") +
@@ -591,9 +585,9 @@ small.mult.pca <- ggplot(pca.pivot) +
   theme(axis.text.y= element_text(size = "4")) +
   coord_flip()
 png(filename = "norm-PCA_small_multiples-by_group.png",    # create PNG for the PCA 
-    width = 7.55*600,        # 10 x 600 pixels
+    width = 7.55*600,        # 7.55 x 600 pixels
     height = 6.8*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 4)        # smaller font size)
 print(small.mult.pca)
 dev.off()
@@ -612,7 +606,7 @@ small.mult.pca <- ggplot(pca.pivot) +
 png(filename = "norm-PCA_small_multiples-by_treatment.png",    # create PNG for the PCA 
     width = 7.55*600,        # 7.55 x 600 pixels
     height = 6.8*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 4)        # smaller font size)
 print(small.mult.pca)
 dev.off()
@@ -631,7 +625,7 @@ small.mult.pca <- ggplot(pca.pivot) +
 png(filename = "norm-PCA_small_multiples-by_variety.png",    # create PNG for the PCA 
     width = 7.55*600,        # 7.55 x 600 pixels
     height = 6.8*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 4)        # smaller font size)
 print(small.mult.pca)
 dev.off()
@@ -650,12 +644,10 @@ small.mult.pca <- ggplot(pca.pivot) +
 png(filename = "norm-PCA_small_multiples-by_subpopulation.png",    # create PNG for the PCA 
     width = 7.55*600,        # 7.55 x 600 pixels
     height = 6.8*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 4)        # smaller font size)
 print(small.mult.pca)
 dev.off()
-
-
 
 
 ############################################
@@ -682,9 +674,9 @@ plotBCV(y.disp) # Plot the dispersion of the data
 
 # Save the dispersion plot
 png(file="rice_shade_data_dispersions.png",    # create PNG for the MDS        
-    width = 9*600,        # 10 x 600 pixels
+    width = 9*600,        # 9 x 600 pixels
     height = 5*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size))
 plotBCV(y.disp) # Plot the dispersion of the data
 dev.off()
@@ -709,9 +701,9 @@ plotQLDisp(fit)
 
 # Save the QL dispersion plot
 png(file="QL_dispersions.png",    # create PNG for the MDS        
-    width = 9*600,        # 10 x 600 pixels
+    width = 9*600,        # 9 x 600 pixels
     height = 5*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size))
 plotQLDisp(fit) # Plot the QL dispersion of the data
 dev.off()
@@ -748,9 +740,9 @@ title("CCA1 - LOC_Os08g06110")
 
 # Plot example shade response genes
 png(file="gene_controls_rice.png",    # create PNG for the MDS        
-    width = 9*600,        # 10 x 600 pixels
+    width = 9*600,        # 9 x 600 pixels
     height = 5*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size))
 par(mfrow=c(2,2), mar=c(9,4.1,4.1,2.1))
 barplot(norm_counts["LOC_Os09g20940", ], las = 2, ylab = "Normalised counts (CPM)") # Example value
@@ -765,9 +757,9 @@ dev.off()
 
 # Plot example shade response genes
 png(file="shade_controls_rice.png",    # create PNG for the MDS        
-    width = 9*600,        # 10 x 600 pixels
+    width = 9*600,        # 9 x 600 pixels
     height = 5*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size))
 par(mfrow=c(2,2), mar=c(9,4.1,4.1,2.1))
 barplot(norm_counts["LOC_Os07g47450", ], las = 2, ylab = "Normalised counts (CPM)") # Example value
@@ -810,7 +802,7 @@ heatmap.2(highly_variable_lcpm,
 png(file="norm-top500_var_genes-heatmap.png",    # create PNG for the MDS        
     width = 10*600,        # 10 x 600 pixels
     height = 5*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size))
 par(mar=c(9,4.1,4.1,2.1))
 heatmap.2(highly_variable_lcpm, 
@@ -912,9 +904,9 @@ top_DE<-which(et_merge$PValue < p.value & et_merge$fdr.gen < fdr)
 length(unique(et_merge$Gene_ID[top_DE])) #29
 detags <- rownames(y)[top_DE]
 png(file="smear_IR64_FRvsCtrl.png",    # create PNG for the MDS        
-    width = 5*600,        # 10 x 600 pixels
+    width = 5*600,        # 5 x 600 pixels
     height = 5*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size))
 plotSmear(et, de.tags=detags)
 title("IR64 low R-FR vs high R-FR")
@@ -935,9 +927,9 @@ top_DE<-which(et_merge$PValue < p.value & et_merge$fdr.gen < fdr)
 length(unique(et_merge$Gene_ID[top_DE])) #2
 detags <- rownames(y)[top_DE]
 png(file="smear_LukTakhar_FRvsCtrl.png",    # create PNG for the MDS        
-    width = 5*600,        # 10 x 600 pixels
+    width = 5*600,        # 5 x 600 pixels
     height = 5*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size))
 plotSmear(et, de.tags=detags)
 title("LukTakhar low R-FR vs high R-FR")
@@ -958,9 +950,9 @@ top_DE<-which(et_merge$PValue < p.value & et_merge$fdr.gen < fdr)
 length(unique(et_merge$Gene_ID[top_DE])) #9
 detags <- rownames(y)[top_DE]
 png(file="smear_MBlatec_FRvsCtrl.png",    # create PNG for the MDS        
-    width = 5*600,        # 10 x 600 pixels
+    width = 5*600,        # 5 x 600 pixels
     height = 5*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size))
 plotSmear(et, de.tags=detags)
 title("MBlatec low R-FR vs high R-FR")
@@ -981,9 +973,9 @@ top_DE<-which(et_merge$PValue < p.value & et_merge$fdr.gen < fdr)
 length(unique(et_merge$Gene_ID[top_DE])) #27
 detags <- rownames(y)[top_DE]
 png(file="smear_Mudgo_FRvsCtrl.png",    # create PNG for the MDS        
-    width = 5*600,        # 10 x 600 pixels
+    width = 5*600,        # 5 x 600 pixels
     height = 5*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size))
 plotSmear(et, de.tags=detags)
 title("Mudgo low R-FR vs high R-FR")
@@ -1004,9 +996,9 @@ top_DE<-which(et_merge$PValue < p.value & et_merge$fdr.gen < fdr)
 length(unique(et_merge$Gene_ID[top_DE])) #35
 detags <- rownames(y)[top_DE]
 png(file="smear_Sabharaj_FRvsCtrl.png",    # create PNG for the MDS        
-    width = 5*600,        # 10 x 600 pixels
+    width = 5*600,        # 5 x 600 pixels
     height = 5*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size))
 plotSmear(et, de.tags=detags)
 title("Sabharaj low R-FR vs high R-FR")
@@ -1027,9 +1019,9 @@ top_DE<-which(et_merge$PValue < p.value & et_merge$fdr.gen < fdr)
 length(unique(et_merge$Gene_ID[top_DE])) #31
 detags <- rownames(y)[top_DE]
 png(file="smear_Zhenshan_FRvsCtrl.png",    # create PNG for the MDS        
-    width = 5*600,        # 10 x 600 pixels
+    width = 5*600,        # 5 x 600 pixels
     height = 5*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size))
 plotSmear(et, de.tags=detags)
 title("Zhenshan low R-FR vs high R-FR")
@@ -1053,9 +1045,9 @@ top_DE<-which(et_merge$PValue < p.value & et_merge$fdr.gen < fdr)
 length(unique(et_merge$Gene_ID[top_DE])) #379
 detags <- rownames(y)[top_DE]
 png(file="smear_all_varieties-FRvsCtrl.png",    # create PNG for the MDS        
-    width = 5*600,        # 10 x 600 pixels
+    width = 5*600,        # 5 x 600 pixels
     height = 5*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size))
 plotSmear(et, de.tags=detags)
 title("All varieties low R-FR vs high R-FR")
@@ -1064,7 +1056,7 @@ write.table(et_merge[top_DE,], file = "06-all_varieties-FRvsCtrl-DE.tab", sep = 
 write.table(et_merge, file = "06-all_varieties-FRvsCtrl-DE_full.tab", sep = "\t", row.names = FALSE)
 
 # Test for DE genes of low R-FR vs high R-FR for indica varieties
-et <- glmQLFTest(fit, contrast=makeContrasts(general_shade = ((IR64_FR + Mudgo_FR + Sabharaj_FR + Zhenshan_FR)/4 - 
+et <- glmQLFTest(fit, contrast=makeContrasts(indica_shade = ((IR64_FR + Mudgo_FR + Sabharaj_FR + Zhenshan_FR)/4 - 
                                                                 (IR64_WL + Mudgo_WL + Sabharaj_WL + Zhenshan_WL)/4),
                                              levels=design)
 )
@@ -1079,9 +1071,9 @@ top_DE<-which(et_merge$PValue < p.value & et_merge$fdr.gen < fdr)
 length(unique(et_merge$Gene_ID[top_DE])) #319
 detags <- rownames(y)[top_DE]
 png(file="smear_indica_varieties-FRvsCtrl.png",    # create PNG for the MDS        
-    width = 5*600,        # 10 x 600 pixels
+    width = 5*600,        # 5 x 600 pixels
     height = 5*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size))
 plotSmear(et, de.tags=detags)
 title("Indica varieties low R-FR vs high R-FR")
@@ -1091,7 +1083,7 @@ write.table(et_merge, file = "07-indica_varieties-FRvsCtrl-DE_full.tab", sep = "
 
 
 # Test for DE genes of low R-FR vs high R-FR for japonica varieties
-et <- glmQLFTest(fit, contrast=makeContrasts(general_shade = ((LukTakhar_FR + MBlatec_FR)/2 - 
+et <- glmQLFTest(fit, contrast=makeContrasts(japonica_shade = ((LukTakhar_FR + MBlatec_FR)/2 - 
                                                                 (LukTakhar_WL + MBlatec_WL)/2),
                                              levels=design)
 )
@@ -1106,9 +1098,9 @@ top_DE<-which(et_merge$PValue < p.value & et_merge$fdr.gen < fdr)
 length(unique(et_merge$Gene_ID[top_DE])) #21
 detags <- rownames(y)[top_DE]
 png(file="smear_japonica_varieties-FRvsCtrl.png",    # create PNG for the MDS        
-    width = 5*600,        # 10 x 600 pixels
+    width = 5*600,        # 5 x 600 pixels
     height = 5*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size))
 plotSmear(et, de.tags=detags)
 title("Japonica varieties low R-FR vs high R-FR")
@@ -1212,9 +1204,9 @@ up.down.degs <- data.frame(up.down.degs, total = rowSums(up.down.degs[,2:3]))
 # adapted from a script by Dr. Hans van Veene
 
 png(file="Fig_3B-up_and_down_DEGs.png",    # create PNG for the MDS        
-    width = 7.55*600,        # 10 x 600 pixels
+    width = 7.55*600,        # 7.55 x 600 pixels
     height = 6.8*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size))
 
 maxy <- 1.10 * max(cbind(up.down.degs$up, up.down.degs$down)) # range of the y-axis
@@ -1298,27 +1290,27 @@ upset(fromList(all.degs.sets), sets = c("IR64", "LukTakhar", "MBlatec", "Mudgo",
 
 
 png(file="upsetR_plot.png",    # create PNG for the MDS        
-    width = 5*600,        # 10 x 600 pixels
+    width = 5*600,        # 5 x 600 pixels
     height = 5*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size))
 upset(fromList(all.degs.sets), sets = c("IR64", "LukTakhar", "MBlatec", "Mudgo", "Sabharaj", "Zhenshan", "Indica", "Japonica", "General"), sets.bar.color = "#56B4E9",
       order.by = "freq",  set_size.show = TRUE, set_size.scale_max = 600)
 dev.off()
 
 png(file="Fig_3A-upsetR_plot_per_variety-fdr_0.05.png",    # create PNG for the MDS        
-    width = 7.55*600,        # 10 x 600 pixels
+    width = 7.55*600,        # 7.55 x 600 pixels
     height = 6.8*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size))
 upset(fromList(all.degs.sets), sets = c("IR64", "LukTakhar", "MBlatec", "Mudgo", "Sabharaj", "Zhenshan"), sets.bar.color = "#56B4E9",
       order.by = "freq",  set_size.show = TRUE, set_size.scale_max = 50)
 dev.off()
 
 png(file="upsetR_plot_per_variety_and_general_shade.png",    # create PNG for the MDS        
-    width = 5*600,        # 10 x 600 pixels
+    width = 5*600,        # 5 x 600 pixels
     height = 5*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size))
 upset(fromList(all.degs.sets), sets = c("IR64", "LukTakhar", "MBlatec", "Mudgo", "Sabharaj", "Zhenshan", "General"), sets.bar.color = "#56B4E9",
       order.by = "freq",  set_size.show = TRUE, set_size.scale_max = 450)
@@ -1357,9 +1349,9 @@ pc.var<-pca.res$sdev^2 # sdev^2 captures these eigenvalues from the PCA result
 pc.per<-round(pc.var/sum(pc.var)*100, 1) # we can then use these eigenvalues to calculate the percentage variance explained by each PC
 
 png(filename = paste0(label.degs,"-PCA_percentage_of_variance_by_PC.png"),    # create PNG for the clustering        
-    width = 7.55*600,        # 10 x 600 pixels
+    width = 7.55*600,        # 7.55 x 600 pixels
     height = 6.8*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size)
 plot(pc.per)
 title("Percentage variance explained by each PC")
@@ -1386,9 +1378,9 @@ pca.plot <- ggplot(pca.res.df) +
   theme_bw()
 
 png(filename = paste0(label.degs,"-PCA-by_", "group", ".png"),    # create PNG for the PCA    
-    width = 20*600,        # 10 x 600 pixels
+    width = 20*600,        # 20 x 600 pixels
     height = 17*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size)
 print(pca.plot)
 dev.off()
@@ -1407,9 +1399,9 @@ pca.plot2 <- ggplot(pca.res.df) +
   theme(axis.text.y= element_text(size = "12")) 
 
 png(filename = paste0(label.degs,"-PCA-by_", "group", ".png"),    # create PNG for the PCA    
-    width = 7.55*600,        # 10 x 600 pixels
+    width = 7.55*600,        # 7.55 x 600 pixels
     height = 6.8*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 8)        # smaller font size)
 print(pca.plot2)
 dev.off()
@@ -1432,9 +1424,9 @@ for (i in seq_along(colnames(targets))){
     theme(axis.text.y= element_text(size = "12")) 
   
   png(filename = paste0(label.degs,"-PCA-by_", colnames(targets)[i], ".png"),    # create PNG for the PCA    
-      width = 7.55*600,        # 10 x 600 pixels
+      width = 7.55*600,        # 7.55 x 600 pixels
       height = 6.8*600,
-      res = 600,            # 300 pixels per inch
+      res = 600,            # 600 pixels per inch
       pointsize = 8)        # smaller font size)
   print(pca.plot)
   dev.off()
@@ -1477,9 +1469,9 @@ small.mult.pca <- ggplot(pca.pivot) +
   coord_flip()
 
 png(filename = paste0(label.degs,"-PCA_small_multiples-by_group.png"),    # create PNG for the PCA 
-    width = 7.55*600,        # 10 x 600 pixels
-    height = 6.8*600,     # 8.5 x 600 pixels
-    res = 600,            # 300 pixels per inch
+    width = 7.55*600,        # 7.55 x 600 pixels
+    height = 6.8*600,     
+    res = 600,            # 600 pixels per inch
     pointsize = 4)        # smaller font size)
 print(small.mult.pca)
 dev.off()
@@ -1495,9 +1487,9 @@ small.mult.pca <- ggplot(pca.pivot) +
   theme_bw() +
   coord_flip()
 png(filename = paste0(label.degs,"-PCA_small_multiples-by_treatment.png"),    # create PNG for the PCA 
-    width = 7.55*600,        # 10 x 600 pixels
-    height = 6.8*600,      # 8.5 x 600 pixels
-    res = 600,            # 300 pixels per inch
+    width = 7.55*600,        # 7.55 x 600 pixels
+    height = 6.8*600, 
+    res = 600,            # 600 pixels per inch
     pointsize = 4)        # smaller font size)
 print(small.mult.pca)
 dev.off()
@@ -1515,9 +1507,9 @@ small.mult.pca <- ggplot(pca.pivot) +
   theme_bw() +
   coord_flip()
 png(filename = paste0(label.degs,"-PCA_small_multiples-by_variety.png"),    # create PNG for the PCA 
-    width = 7.55*600,        # 10 x 600 pixels
+    width = 7.55*600,        # 7.55 x 600 pixels
     height = 6.8*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 4)        # smaller font size)
 print(small.mult.pca)
 dev.off()
@@ -1531,9 +1523,9 @@ small.mult.pca <- ggplot(pca.pivot) +
   theme_bw() +
   coord_flip()
 png(filename = paste0(label.degs,"-PCA_small_multiples-by_subpopulation.png"),    # create PNG for the PCA 
-    width = 7.55*600,        # 10 x 600 pixels
+    width = 7.55*600,        # 7.55 x 600 pixels
     height = 6.8*600,
-    res = 600,            # 300 pixels per inch
+    res = 600,            # 600 pixels per inch
     pointsize = 4)        # smaller font size)
 print(small.mult.pca)
 dev.off()
@@ -1551,9 +1543,9 @@ small.mult.pca <- ggplot(pca.pivot %>% filter(PC == "PC1") %>% mutate(PC = paste
   theme(axis.text.y= element_text(size = "10")) +
   coord_flip()
 png(filename = paste0("Fig_3C-", label.degs,"-PCA_small_multiples-by_variety-fdr_0.05.png"),    # create PNG for the PCA 
-    width = 7.55*600,        # 10 x 600 pixels
-    height = 6.8*600,      # 8.5 x 600 pixels
-    res = 600,            # 300 pixels per inch
+    width = 7.55*600,        # 7.55 x 600 pixels
+    height = 6.8*600, 
+    res = 600,            # 600 pixels per inch
     pointsize = 4)        # smaller font size)
 print(small.mult.pca)
 dev.off()
@@ -1572,9 +1564,9 @@ small.mult.pca <- ggplot(pca.pivot %>% filter(PC == "PC2") %>% mutate(PC = paste
   theme(axis.text.y= element_text(size = "10")) +
   coord_flip()
 png(filename = paste0("Fig_3C-", label.degs,"-PCA_small_multiples-by_treatment-fdr_0.05.png"),    # create PNG for the PCA 
-    width = 7.55*600,        # 10 x 600 pixels
-    height = 6.8*600,      # 8.5 x 600 pixels
-    res = 600,            # 300 pixels per inch
+    width = 7.55*600,        # 7.55 x 600 pixels
+    height = 6.8*600, 
+    res = 600,            # 600 pixels per inch
     pointsize = 4)        # smaller font size)
 print(small.mult.pca)
 dev.off()
@@ -1902,7 +1894,7 @@ for (i in seq_along(filtered.gene.lists)) {
                "_fdr_",
                fdr,               
                ".png"),    # create png for the heat map        
-        width = 6.5*600,        # 5 x 600 pixels
+        width = 6.5*600,        # 6.5 x 600 pixels
         if (length(rownames(plotdf)) > 5) {height = 5*600
         } else {height = 3.5*600},
         res = 600,            # 600 pixels per inch
@@ -1952,7 +1944,7 @@ for (i in seq_along(filtered.gene.lists)) {
                "_fdr_",
                fdr,               
                ".png"),    # create png for the heat map        
-        width = 6.5*600,        # 5 x 600 pixels
+        width = 6.5*600,        # 6.5 x 600 pixels
         if (length(rownames(plotdf)) > 5) {height = 5*600
         } else {height = 3.5*600},
         res = 600,            # 600 pixels per inch
@@ -2033,7 +2025,7 @@ for (i in seq_along(filtered.gene.lists)) {
                "_fdr_",
                fdr,               
                ".png"),    # create png for the heat map        
-        width = 6.5*600,        # 5 x 600 pixels
+        width = 6.5*600,        # 6.5 x 600 pixels
         if (length(rownames(plotdf)) > 5) {height = 5*600
         } else {height = 3.5*600},
         res = 600,            # 600 pixels per inch
@@ -2083,7 +2075,7 @@ for (i in seq_along(filtered.gene.lists)) {
                "_fdr_",
                fdr,               
                ".png"),    # create png for the heat map        
-        width = 6.5*600,        # 5 x 600 pixels
+        width = 6.5*600,        # 6.5 x 600 pixels
         if (length(rownames(plotdf)) > 5) {height = 5*600
         } else {height = 3.5*600},
         res = 600,            # 600 pixels per inch
@@ -2313,7 +2305,7 @@ for (i in seq_along(filtered.gene.lists)) {
                "_fdr_",
                fdr,               
                ".png"),    # create png for the heat map        
-        width = 6.5*600,        # 5 x 600 pixels
+        width = 6.5*600,        # 6.5 x 600 pixels
         if (length(rownames(plotdf)) > 5) {height = 5*600
         } else {height = 3.5*600},
         res = 600,            # 600 pixels per inch
@@ -2363,7 +2355,7 @@ for (i in seq_along(filtered.gene.lists)) {
                "_fdr_",
                fdr,               
                ".png"),    # create png for the heat map        
-        width = 6.5*600,        # 5 x 600 pixels
+        width = 6.5*600,        # 6.5 x 600 pixels
         if (length(rownames(plotdf)) > 5) {height = 5*600
         } else {height = 3.5*600},
         res = 600,            # 600 pixels per inch
@@ -2444,7 +2436,7 @@ for (i in seq_along(filtered.gene.lists)) {
                "_fdr_",
                fdr,               
                ".png"),    # create png for the heat map        
-        width = 6.5*600,        # 5 x 600 pixels
+        width = 6.5*600,        # 6.5 x 600 pixels
         if (length(rownames(plotdf)) > 5) {height = 5*600
         } else {height = 3.5*600},
         res = 600,            # 600 pixels per inch
@@ -2494,7 +2486,7 @@ for (i in seq_along(filtered.gene.lists)) {
                "_fdr_",
                fdr,               
                ".png"),    # create png for the heat map        
-        width = 6.5*600,        # 5 x 600 pixels
+        width = 6.5*600,        # 6.5 x 600 pixels
         if (length(rownames(plotdf)) > 5) {height = 5*600
         } else {height = 3.5*600},
         res = 600,            # 600 pixels per inch
