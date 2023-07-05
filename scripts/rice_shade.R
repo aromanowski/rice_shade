@@ -509,16 +509,16 @@ sampleLabels <- rownames(y.filtered.norm$samples)
 pca.plot <- ggplot(pca.res.df) +
   aes(x=PC1, y=PC2, label=sampleLabels, color = group) +
   geom_point(size = 4) +
-  geom_text_repel(size = 4) +
+  # geom_text_repel(size = 4) +
   xlab(paste0("PC1 (",pc.per[1],"%",")")) + 
   ylab(paste0("PC2 (",pc.per[2],"%",")")) +
   labs(title="PCA plot",
        caption=paste0("produced on ", Sys.time())) +
   coord_fixed() +
-  guides(color=guide_legend(title="group")) +
+  guides(color=guide_legend(title="Variety/Treatment")) +
   theme_bw()
 
-png(filename = paste0("norm-PCA-by_", "group", ".png"),    # create PNG for the PCA    
+png(filename = paste0("Supp_fig_4A-norm-PCA-by_", "group", ".png"),    # create PNG for the PCA    
     width = 7.55*600,        # 7.55 x 600 pixels
     height = 6.8*600,
     res = 600,            # 600 pixels per inch
@@ -541,7 +541,7 @@ for (i in seq_along(colnames(targets))){
      guides(color=guide_legend(title=colnames(targets)[i])) +
    theme_bw()
 
- png(filename = paste0("Supp_fig_4B-norm-PCA-by_", colnames(targets)[i], ".png"),    # create PNG for the PCA    
+ png(filename = paste0("Supp_fig_4A-norm-PCA-by_", colnames(targets)[i], ".png"),    # create PNG for the PCA    
      width = 7.55*600,        # 7.55 x 600 pixels
      height = 6.8*600,
      res = 600,            # 600 pixels per inch
@@ -1203,7 +1203,7 @@ up.down.degs <- data.frame(up.down.degs, total = rowSums(up.down.degs[,2:3]))
 # plot up/down genes
 # adapted from a script by Dr. Hans van Veene
 
-png(file="Fig_3B-up_and_down_DEGs.png",    # create PNG for the MDS        
+png(file="Fig_3D-up_and_down_DEGs.png",    # create PNG for the MDS        
     width = 7.55*600,        # 7.55 x 600 pixels
     height = 6.8*600,
     res = 600,            # 600 pixels per inch
@@ -1298,7 +1298,7 @@ upset(fromList(all.degs.sets), sets = c("IR64", "LukTakhar", "MBlatec", "Mudgo",
       order.by = "freq",  set_size.show = TRUE, set_size.scale_max = 600)
 dev.off()
 
-png(file="Fig_3A-upsetR_plot_per_variety-fdr_0.05.png",    # create PNG for the MDS        
+png(file="Fig_3C-upsetR_plot_per_variety-fdr_0.05.png",    # create PNG for the MDS        
     width = 7.55*600,        # 7.55 x 600 pixels
     height = 6.8*600,
     res = 600,            # 600 pixels per inch
@@ -1542,7 +1542,7 @@ small.mult.pca <- ggplot(pca.pivot %>% filter(PC == "PC1") %>% mutate(PC = paste
   theme(axis.text.x= element_text(size = "10")) +
   theme(axis.text.y= element_text(size = "10")) +
   coord_flip()
-png(filename = paste0("Fig_3C-", label.degs,"-PCA_small_multiples-by_variety-fdr_0.05.png"),    # create PNG for the PCA 
+png(filename = paste0("Fig_3A-", label.degs,"-PCA_small_multiples-by_variety-fdr_0.05.png"),    # create PNG for the PCA 
     width = 7.55*600,        # 7.55 x 600 pixels
     height = 6.8*600, 
     res = 600,            # 600 pixels per inch
@@ -1563,7 +1563,7 @@ small.mult.pca <- ggplot(pca.pivot %>% filter(PC == "PC2") %>% mutate(PC = paste
   theme(axis.text.x= element_text(size = "10")) +
   theme(axis.text.y= element_text(size = "10")) +
   coord_flip()
-png(filename = paste0("Fig_3C-", label.degs,"-PCA_small_multiples-by_treatment-fdr_0.05.png"),    # create PNG for the PCA 
+png(filename = paste0("Fig_3A-", label.degs,"-PCA_small_multiples-by_treatment-fdr_0.05.png"),    # create PNG for the PCA 
     width = 7.55*600,        # 7.55 x 600 pixels
     height = 6.8*600, 
     res = 600,            # 600 pixels per inch
@@ -1723,11 +1723,12 @@ for (i in seq_along(filtered.gene.lists)) {
     # Select subset of genes to be graphed
     plotdf <- df2.filtered[which(rownames(df2.filtered) %in% gene_subset),1:47]
     
-    plotdf.qvalues <-full.degs.data[which(full.degs.data$Gene_ID %in% gene_subset),c(1,4,7,10,13,16,19,22,25,28)]
-    significant_degs <- as.data.frame(plotdf.qvalues) %>% filter_all(any_vars(. < fdr))
-    plotdf <- plotdf[which(rownames(plotdf) %in% significant_degs$Gene_ID),]
-  
-  
+    if (names(filtered.gene.lists)[i] != "all expressed genes") {
+      plotdf.qvalues <-full.degs.data[which(full.degs.data$Gene_ID %in% gene_subset),c(1,4,7,10,13,16,19,22,25,28)]
+      significant_degs <- as.data.frame(plotdf.qvalues) %>% filter_all(any_vars(. < fdr))
+      plotdf <- plotdf[which(rownames(plotdf) %in% significant_degs$Gene_ID),]
+    }
+    
     # Remove rows with zero values
     # Go through each row and determine if a value is zero
     row_sub = apply(plotdf, 1, function(row) all(row = 0 ))
@@ -1862,10 +1863,11 @@ for (i in seq_along(filtered.gene.lists)) {
   # Select subset of genes to be graphed
     plotdf <- df4.filtered[which(rownames(df4.filtered) %in% gene_subset),1:12]
     
-    plotdf.qvalues <-full.degs.data[which(full.degs.data$Gene_ID %in% gene_subset),c(1,4,7,10,13,16,19,22,25,28)]
-    significant_degs <- as.data.frame(plotdf.qvalues) %>% filter_all(any_vars(. < fdr))
-    plotdf <- plotdf[which(rownames(plotdf) %in% significant_degs$Gene_ID),]
-  
+    if (names(filtered.gene.lists)[i] != "all expressed genes") {
+      plotdf.qvalues <-full.degs.data[which(full.degs.data$Gene_ID %in% gene_subset),c(1,4,7,10,13,16,19,22,25,28)]
+      significant_degs <- as.data.frame(plotdf.qvalues) %>% filter_all(any_vars(. < fdr))
+      plotdf <- plotdf[which(rownames(plotdf) %in% significant_degs$Gene_ID),]
+    }
     # Remove rows with zero values
     # Go through each row and determine if a value is zero
     row_sub = apply(plotdf, 1, function(row) all(row = 0 ))
@@ -1993,10 +1995,11 @@ for (i in seq_along(filtered.gene.lists)) {
     # Select subset of genes to be graphed
     plotdf <- df5.filtered[which(rownames(df5.filtered) %in% gene_subset),]
     
-    plotdf.qvalues <-full.degs.data[which(full.degs.data$Gene_ID %in% gene_subset),c(1,4,7,10,13,16,19,22,25,28)]
-    significant_degs <- as.data.frame(plotdf.qvalues) %>% filter_all(any_vars(. < fdr))
-    plotdf <- plotdf[which(rownames(plotdf) %in% significant_degs$Gene_ID),]
-    
+    if (names(filtered.gene.lists)[i] != "all expressed genes") {
+      plotdf.qvalues <-full.degs.data[which(full.degs.data$Gene_ID %in% gene_subset),c(1,4,7,10,13,16,19,22,25,28)]
+      significant_degs <- as.data.frame(plotdf.qvalues) %>% filter_all(any_vars(. < fdr))
+      plotdf <- plotdf[which(rownames(plotdf) %in% significant_degs$Gene_ID),]
+    }
     # Remove rows with zero values
     # Go through each row and determine if a value is zero
     row_sub = apply(plotdf, 1, function(row) all(row = 0 ))
@@ -2134,10 +2137,11 @@ for (i in seq_along(filtered.gene.lists)) {
     # Select subset of genes to be graphed
     plotdf <- df2.filtered.unscaled[which(rownames(df2.filtered.unscaled) %in% gene_subset),1:47]
     
-    plotdf.qvalues <-full.degs.data[which(full.degs.data$Gene_ID %in% gene_subset),c(1,4,7,10,13,16,19,22,25,28)]
-    significant_degs <- as.data.frame(plotdf.qvalues) %>% filter_all(any_vars(. < fdr))
-    plotdf <- plotdf[which(rownames(plotdf) %in% significant_degs$Gene_ID),]
-    
+    if (names(filtered.gene.lists)[i] != "all expressed genes") {
+      plotdf.qvalues <-full.degs.data[which(full.degs.data$Gene_ID %in% gene_subset),c(1,4,7,10,13,16,19,22,25,28)]
+      significant_degs <- as.data.frame(plotdf.qvalues) %>% filter_all(any_vars(. < fdr))
+      plotdf <- plotdf[which(rownames(plotdf) %in% significant_degs$Gene_ID),]
+    }
     
     # Remove rows with zero values
     # Go through each row and determine if a value is zero
@@ -2273,9 +2277,11 @@ for (i in seq_along(filtered.gene.lists)) {
     # Select subset of genes to be graphed
     plotdf <- df4.filtered.unscaled[which(rownames(df4.filtered.unscaled) %in% gene_subset),1:12]
     
-    plotdf.qvalues <-full.degs.data[which(full.degs.data$Gene_ID %in% gene_subset),c(1,4,7,10,13,16,19,22,25,28)]
-    significant_degs <- as.data.frame(plotdf.qvalues) %>% filter_all(any_vars(. < fdr))
-    plotdf <- plotdf[which(rownames(plotdf) %in% significant_degs$Gene_ID),]
+    if (names(filtered.gene.lists)[i] != "all expressed genes") {
+      plotdf.qvalues <-full.degs.data[which(full.degs.data$Gene_ID %in% gene_subset),c(1,4,7,10,13,16,19,22,25,28)]
+      significant_degs <- as.data.frame(plotdf.qvalues) %>% filter_all(any_vars(. < fdr))
+      plotdf <- plotdf[which(rownames(plotdf) %in% significant_degs$Gene_ID),]
+    }
     
     # Remove rows with zero values
     # Go through each row and determine if a value is zero
@@ -2404,9 +2410,11 @@ for (i in seq_along(filtered.gene.lists)) {
     # Select subset of genes to be graphed
     plotdf <- df5.filtered.unscaled[which(rownames(df5.filtered.unscaled) %in% gene_subset),]
     
-    plotdf.qvalues <-full.degs.data[which(full.degs.data$Gene_ID %in% gene_subset),c(1,4,7,10,13,16,19,22,25,28)]
-    significant_degs <- as.data.frame(plotdf.qvalues) %>% filter_all(any_vars(. < fdr))
-    plotdf <- plotdf[which(rownames(plotdf) %in% significant_degs$Gene_ID),]
+    if (names(filtered.gene.lists)[i] != "all expressed genes") {
+      plotdf.qvalues <-full.degs.data[which(full.degs.data$Gene_ID %in% gene_subset),c(1,4,7,10,13,16,19,22,25,28)]
+      significant_degs <- as.data.frame(plotdf.qvalues) %>% filter_all(any_vars(. < fdr))
+      plotdf <- plotdf[which(rownames(plotdf) %in% significant_degs$Gene_ID),]
+    }    
     
     # Remove rows with zero values
     # Go through each row and determine if a value is zero

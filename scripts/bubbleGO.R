@@ -176,7 +176,7 @@ go.bp <-ggplot(df.bp, aes(x = x_var, y = y_var, labels = Term, size =RF, col = s
 go.bp
 
 # export the plot to a png file
-png(filename = "DE/GO/Supp_fig_5A-bubble_plot_selected_BP.png",
+png(filename = "DE/GO/Supp_fig_6A-bubble_plot_selected_BP.png",
     width = 600 * 7.55,        
     height = 600 * 6.8,
     units = "px",
@@ -214,7 +214,7 @@ go.cc <-ggplot(df.cc, aes(x = x_var, y = y_var, labels = Term, size =RF, col = s
 go.cc
 
 # export the plot to a png file
-png(filename = "DE/GO/Supp_fig_5B-bubble_plot_selected_CC.png",
+png(filename = "DE/GO/Supp_fig_6B-bubble_plot_selected_CC.png",
     width = 600 * 5.55,        
     height = 600 * 6.8,
     units = "px",
