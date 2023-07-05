@@ -518,7 +518,7 @@ pca.plot <- ggplot(pca.res.df) +
   guides(color=guide_legend(title="Variety/Treatment")) +
   theme_bw()
 
-png(filename = paste0("Supp_fig_4A-norm-PCA-by_", "group", ".png"),    # create PNG for the PCA    
+png(filename = paste0("Supp_fig_5A-norm-PCA-by_", "group", ".png"),    # create PNG for the PCA    
     width = 7.55*600,        # 7.55 x 600 pixels
     height = 6.8*600,
     res = 600,            # 600 pixels per inch
@@ -541,7 +541,7 @@ for (i in seq_along(colnames(targets))){
      guides(color=guide_legend(title=colnames(targets)[i])) +
    theme_bw()
 
- png(filename = paste0("Supp_fig_4A-norm-PCA-by_", colnames(targets)[i], ".png"),    # create PNG for the PCA    
+ png(filename = paste0("Supp_fig_5A-norm-PCA-by_", colnames(targets)[i], ".png"),    # create PNG for the PCA    
      width = 7.55*600,        # 7.55 x 600 pixels
      height = 6.8*600,
      res = 600,            # 600 pixels per inch
